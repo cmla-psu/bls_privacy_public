@@ -1,0 +1,66 @@
+# This is an example configuration for a privacy accountant
+
+seed: 32  # Seed for PRNG, either integer or null
+
+clipping_prob: 0.01 # clipping probability for clipping accountant
+
+input_files: [  # input microdata files
+        tests/testconfig/fake_data/ri44_qdb_2015_1.csv,
+        tests/testconfig/fake_data/nj34_qdb_2015_1.csv
+] 
+
+output: {
+    aggregate: {
+        folder: tests/testconfig/aggregated_data,
+        suffix: agg
+    },
+
+    postprocessed: {
+        folder: tests/testconfig/protected_data,
+        suffix: protected
+    },
+
+    measure_folder: tests/testconfig/measurements
+
+}
+
+accountant: ClippingAccountant
+
+reader: QCEWMicroDataReader
+
+privacy_distances: { # private fields and their privacy distance parameter
+        m1emp: 1.001,
+        m2emp: 1.002,
+        m3emp: 1.003,
+        wage: 75.004 
+    }
+
+queries: {
+    identity: { # aggregation columns and the mus assigned to them
+        m1emp: 0.055,
+        m2emp: 0.056,
+        m3emp: 0.057,
+        wage: 0.058
+    },
+    groupby: [ # group: null means overall aggregation
+       {name: "Sum Query",
+        group: null,
+        mu: { m1emp: 0.109, m2emp: 0.101, m3emp: 0.102, wage: 0.053}
+       },
+
+       {name: "By County",
+        group: ["cnty"],
+        mu: { m1emp: 0.104, m2emp: 0.105, m3emp: 0.106, wage: 0.057}
+       },
+
+       {name: "By NAICS Sector",
+        group: ["naics_sector"],
+        mu: { m1emp: 0.108, m2emp: 0.109, m3emp: 0.101, wage: 0.052}
+       },
+
+       {name: "By County/Super Sector",
+        group: ["cnty", "super_sector"],
+        mu: { m1emp: 0.103, m2emp: 0.104, m3emp: 0.105, wage: 0.056}
+       }
+    ]
+}
