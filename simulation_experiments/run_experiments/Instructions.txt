@@ -1,0 +1,10 @@
+
+To run: 
+
+Copy main.py and directories: accountant, comparisons, mechanisms, readers, and reports into this folder.
+
+Create folders: measurements, compare_data, aggregated_data, protected_data
+
+See simulated_experiments.ipynb for next set of instructions (which includes running the .sh files).
+
+Then run main_tables.R, main_equalwages_plots.R, and main_budgets_plots.R in R_code folder.

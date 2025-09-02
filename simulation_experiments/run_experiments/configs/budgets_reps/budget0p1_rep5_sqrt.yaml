@@ -1,0 +1,59 @@
+accountant: SQRTAccountant
+clipping_prob: 0.01
+input_files:
+- EstablishmentLevelData/ri44_qbp_2016_1.csv
+- EstablishmentLevelData/nj34_qbp_2016_1.csv
+output:
+  aggregate:
+    folder: aggregated_data/budgets_reps
+    suffix: agg
+  measure_folder: measurements/budgets_reps
+  postprocessed:
+    folder: protected_data/budgets_reps
+    suffix: protected
+privacy_distances:
+  m1emp: 0.5
+  m2emp: 0.5
+  m3emp: 0.5
+  wage: 50.0
+queries:
+  groupby:
+  - group: null
+    mu:
+      m1emp: 0.00867
+      m2emp: 0.00867
+      m3emp: 0.00867
+      wage: 0.00434
+    name: Sum Query
+  - group:
+    - cnty
+    mu:
+      m1emp: 0.02601
+      m2emp: 0.02601
+      m3emp: 0.02601
+      wage: 0.0065
+    name: By County
+  - group:
+    - naics5
+    mu:
+      m1emp: 0.02601
+      m2emp: 0.02601
+      m3emp: 0.02601
+      wage: 0.0065
+    name: By NAICS5
+  - group:
+    - cnty
+    - naics5
+    mu:
+      m1emp: 0.03035
+      m2emp: 0.03035
+      m3emp: 0.03035
+      wage: 0.0065
+    name: By County/NAICS5
+  identity:
+    m1emp: 0.00867
+    m2emp: 0.00867
+    m3emp: 0.00867
+    wage: 0.00434
+reader: QCEWMicroDataReader
+seed: 6

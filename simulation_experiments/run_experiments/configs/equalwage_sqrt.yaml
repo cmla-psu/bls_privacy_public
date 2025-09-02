@@ -1,0 +1,66 @@
+# This is an example configuration for a privacy accountant
+
+seed: 1  # Seed for PRNG, either integer or null
+
+clipping_prob: 0.01 # clipping probability for clipping accountant
+
+input_files: [  # input microdata files
+        EstablishmentLevelData/ri44_qbp_2016_1.csv,
+        EstablishmentLevelData/nj34_qbp_2016_1.csv
+] 
+
+output: {
+    aggregate: {
+        folder: aggregated_data,
+        suffix: agg
+    },
+
+    postprocessed: {
+        folder: protected_data,
+        suffix: protected
+    },
+
+    measure_folder: measurements
+}
+
+accountant: SQRTAccountant
+
+reader: QCEWMicroDataReader
+
+privacy_distances: { # private fields and their privacy distance parameter
+        m1emp: 0.5,
+        m2emp: 0.5,
+        m3emp: 0.5,
+        wage: 50.0 
+    }
+
+
+queries: {
+    identity: { # aggregation columns and the mus assigned to them
+        m1emp: 0.611,
+        m2emp: 0.611,
+        m3emp: 0.611,
+        wage: 0.611
+    },
+    groupby: [ # group: null means overall aggregation
+       {name: "Sum Query",
+        group: null,
+        mu: { m1emp: 0.179, m2emp: 0.179, m3emp: 0.179, wage: 0.179}
+       },
+
+       {name: "By County",
+        group: ["cnty"],
+        mu: { m1emp: 0.525, m2emp: 0.525, m3emp: 0.525, wage: 0.525}
+       },
+
+       {name: "By NAICS-5",
+        group: ["naics5"],
+        mu: { m1emp: 0.525, m2emp: 0.525, m3emp: 0.525, wage: 0.525}
+       },
+
+       {name: "By County/NAICS-5",
+        group: ["cnty", "naics5"],
+        mu: { m1emp: 0.611, m2emp: 0.611, m3emp: 0.611, wage: 0.611}
+       }
+    ]
+}

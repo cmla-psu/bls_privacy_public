@@ -1,0 +1,292 @@
+
+============================= I. GOAL  ================================= 
+			----------- GOAL -----------
+To create microdata that mimics the structure of the Quarterly 
+Census on Employment and Wages (QCEW) data using County Business 
+Patterns (CBP) and Quarterly Workforce Indicators (QWI) data.
+
+----------------
+COLUMNS NEEDED IN PRODUCED MICRODATA
+* indicators constant value across dataset
+
+Numeric Columns
+* year: year, all entries =2016 
+* qtr: quarter, all entries =1
+- state: numeric state value 1 to 56
+- cnty: numeric county value, numbered within state
+- naics: 6-digit industry code using North American Industry Classification 
+	System (NAICS) (see https://www.bls.gov/iag/tgs/iag_index_naics.htm)
+- naics5, naics 4, naics3: 5,4 and 3-digit industry code respectively
+	(simply the first 5,4,and 3 digits of NAICS code)
+- sector: NAICS sector code (first 2 digits of NAICS code
+- supersector: BLS supersector code which groups NAICS sectors
+	(https://www.bls.gov/cew/classifications/industry/industry-supersectors.htm)
+* own: ownership code. all entries in our microdata =5 (i.e. private ownership)
+- m1emp, m2emp, m3emp: month 1, 2 and 3 employment counts
+- wage: quarterly wage
+- primary_key: unique identifier for entry
+
+String Columns
+* can_agg: indicator of whether the entry can be aggregated, ="Y" for all entries
+* rectype: record type, ="C" for all entries
+--------------
+
+============================= II. STEPS ===================================
+
+Step 1. Retrieve input data from the 3 sources 
+	   *described in Section IV
+Step 2. Run preprocess_combine.py 
+	   * combines the data from the 3 sources into one file
+Step 3. Run getNAICS6data.R 
+	   * takes the combined data from Step 2 and produces a
+		dataset representing NAICS code (6-digit) by county
+	   * suppressed/missing values have been imputed to some extent. 
+Step 4: Run microdataFromPython.ipynb using functions from get_microdata.py
+	   * uses NAICS by county data from Step 3 to create establishment
+		level data which includes columns: 
+		 state, cnty, naics6, m1emp, m2emp, m3emp, and wage 
+Step 5: Run MicrodataPostprocessing.R
+	   * takes establishment level data from Step 4 and adds the additional
+		columns for the final microdata
+
+
+========================== III. FILES OVERVIEW ============================
+
+Folders and Subfolders: (** indicates folder does not have all needed components or needs to be made)
+** DataIn/ 
+	- already contains "high_level_crosswalk.csv" retrieved from
+	https://www.bls.gov/cew/classifications/industry/industry-supersectors.htm
+	- subfolders QWIdata/, ImputeCBP/, and CBPdataRAW/ need to be filled with input data 
+	- explanation on input files on Step 1: retrieving input data found in section IV
+** PythonPreprocessOut
+	- will contain combined data "combineQWIandCBP.csv (Step 2 output)
+	- will also contain diagnostic information from preprocess_combine.py
+* NAICS6_Rfunctions/
+	- contains .R files with functions for use in getNAICS6data.R (Step 3)
+** Get4and6NAICS_R_output/
+	- this is where a checkpoint with the 6-digit NAICS by county data
+		will be saved (result of Step 3)
+** PythonMicrodataSubsets/
+	- will contain the subsets of establishment-level data are saved (Step 4 output)
+	- will contain MicrodataTimePrintOuts.txt which is the computation times for Step 4
+** EstablishmentLevelData/
+	- this is where the final microdata files,"MicrodataFinal.csv" and 
+		"MicrodataFinal.RData",  will be saved (Step 5 output)
+
+Files:
+- preprocess_combine.py (for Step 2)
+- GetSynDataFromQWIandCBP.Rproj (R project for R code for Steps 3 and 5)
+- getNAICS6data.R (for Step 3)
+- get_microdata.py (functions for Step 4)
+- microdataFromPython.ipynb (for Step 4, uses get_microdata.py)
+- MicrodataPostprocessing.R (for Step 5)
+- FIPSstatecodename.txt (used in Step 5 to get folder and file names based on FIPS code)
+- gammajustificationplot.R (R code to plot comparisons of gamma parameters)
+	
+
+=================================================================================
+=========================== IV. GETTING THE INPUT DATA ===========================
+=================================================================================
+There are 3 sources of data.
+	* Imputed CBP data 
+		- contain one employment value for the quarter for 2 to 6 digit NAICS 
+			codes by county levels
+		- no suppressed values
+	* QWI Files 
+		- contain end of quarter employment (EmpEnd) and beginning of 
+		quarter employment (Emp) which can fill in month 1 employment at
+		4-digit NAICS by county. 
+		- County totals across industries also help to adjust the 4-digit 
+			NAICS employment values
+		- EarnBeg can help fill in missing quarterly wage values
+		- Has missing/suppressed values
+	* Raw CBP data 
+		- contain quarterly wage values for 2 to 6 digit NAICS codes by 
+			county levels
+		- Has missing/suppressed values
+	
+
+		------------------ QWI FILES ------------------
+
+QWI files from the U.S. Census website should be retrieved using 
+the LED Extraction Tool (https://ledextract.ces.census.gov/qwi/all).
+	* This data allows use to get some of the month 1 employment counts and
+		quarterly wage values at the 4-digit NAICS by county level.
+	* Variable Names explained https://lehd.ces.census.gov/doc/QWI_101.pdf
+
+U.S. Census Bureau. (n.d.). LED Extraction Tool. Quarterly Workforce Indicators. 
+Retrieved May 14, 2024, from https://ledextract.ces.census.gov/qwi/all
+
+****************
+To Retrieve:
+	1. Get State-Level by 4-digit NAICS aggregate values
+		a. Geography Level="United States" then select all states.
+		b. Firm Characteristics: 
+			Industry Detail = NAICS 4-digit Industries, then select all 
+				NAICS 4-digit Industries
+			Other Firm Characteristics=No Firm Age/Size Details
+			Firm Ownership=All Private Ownership
+		c. Worker Characteristics: Select No Worker Characteristics
+		d. Indicators:
+			Under Employment Tab: Select Emp, EmpEnd, EmpS
+			Under Earnings Tab: Select EarnBeg and EarnHirAS
+		e. Quarters: Select 2016 Q1
+		f. Submit Request (either download from website or have files emailed)
+	2. Get County-Level by 4-digit NAICS aggregate values
+		a. Get County Repeat steps b-f with different geography selections.
+			i) Select Geography Level=[some state, DC, or Puerto Rico], 
+				then select all Counties
+			ii) Select another state/territory and select all Counties.
+					(I split the 52 state/territories into 
+					   4 subsets to download separately)
+			iii) Repeat steps 1a to 1f for each group of states
+Save these files in folder "DataIn/QWIdata" with county-level files 
+named qwi_co#.csv and state-level file as qwi_states.csv
+
+Notes: State-level data did not end up in use.
+*****************
+
+
+Note on Suppression Flags:
+Each measurement has two associated variables. First is the measurement value with noise or NA. The other is an flag to identify if and why the data is missing. This variable adds an "s" in front of the value's variable name (ex. "EmpEnd" and "sEmpEnd"). These flags in our extraction data take values -1 (data not available),5 (data suppressed due to publication standards), and 1 (data is okay). 
+
+			------------------ Imputed CBP --------------------
+
+Download the imputed data from https://doi.org/10.3886/E117464V1 and save as 
+	"efsy_cbp_2016.csv" in "DataIn/Impute/" folder. 
+
+Imputed data created by Eckert et al. The code for the imputation can be found on GitHub (https://github.com/fpeckert/cbp_database_public/tree/master) and the corresponding paper can be found (https://www.nber.org/system/files/working_papers/w26632/w26632.pdf).
+
+Eckert, Fabian, Fort, Teresa C., Schott, Peter K., and Yang, Natalie J. County Business Patterns Database. Ann Arbor, MI: Inter-university Consortium for Political and Social Research [distributor], 2020-01-31. https://doi.org/10.3886/E117464V1 
+
+
+			------------------ Raw CBP --------------------
+
+From https://www.census.gov/data/datasets/2016/econ/cbp/2016-cbp.html, 
+Download 'Complete County File' and save as "cbp16co.txt" in "DataIn/CBPdataRAW/" folder
+	- Complete Puerto Rico & Island Area File, 
+		Complete County Equivalents for Puerto Rico & Island Areas File, 
+		Complete State File, and Complete U.S. File were downloaded but not used
+	- File layout documents and References for Industry and Geography codes can also 
+		be found here.
+
+U.S. Census Bureau. (n.d.). County Business Patterns 2016.
+Retrieved May 14, 2024, from https://www.census.gov/data/datasets/2016/econ/cbp/2016-cbp.html
+
+
+The raw data includes more information, such as quarter 1 payroll and number of establishments.
+
+For the raw data any column with the column name suffix '_nf' is a noise flag, where the value means:
+- G, 0 to < 2% noise (low noise)
+- H, 2 to < 5% noise (medium noise)
+- J	>= 5% noise (high noise)
+- D, Withheld to avoid disclosing data for individual companies; data are included in higher level totals. Employment or payroll field set to zero.
+
+
+		--------------------------- NOTES -----------------------
+
+CBP data has industry codes as '------' for total, '##----' for sector, and '###///', '####//',...,'######' are the 3 through 6 digits NAICS codes
+
+QWI data has geography codes as [state number][county number forces to 3 digits with leading zeros]
+
+These formats are used throughout our process with a geography-industry key as [geography]_[industry code]
+
+
+=================================================================================
+=========================== POTENTIAL IMPROVEMENTS ===========================
+================================================================================= 
+
+QWI data could be pulled as .gz files from https://lehd.ces.census.gov/data/. These files include breakdowns by demographic features as well as county and industry code.  The process to download these files can be automated.
+
+Downloading the files entitled:
+qwi_[state abbrev]_rh_f_gc_n4_op_u.csv.gz
+will get the aggregates by county (gc), 4-digit NAICS (n4), race and ethnicity (rh) without seasonality adjustments (u) and without breaking down the data by firm characteristics (f) such as size or age.
+
+The downloading and unzipping can be accomplished using a .sh script which loops through the following commands in terminal for each state abbreviation (code shown for Delaware i.e. de)
+
+	wget -P ./data -N -nv --no-check-certificate https://https://lehd.ces.census.gov/data/qwi/latest_release/de/qwi_de_rh_f_gc_n4_op_u.csv.gz
+	
+	gzip -d data/qwi_de_rh_f_gc_n4_op_u.csv.gz
+
+
+**** Note I used GitBash on Windows, which meant WinZip had to be installed to be able to use the 'gzip' command.
+
+Since these files break down aggregates by race and ethnicity, we would need to filter to find the rows with race as 'A0' (all races) and ethnicity 'A0' (all ethnicities). This could be done within the loop of the .sh script with an awk command which writes rows in which the columns meet conditions:
+ 
+'$1 == "Q"'  	# quarterly data (should always be true)
+'$8 == 0'	# all sexes (always true for 'rh' files)
+'$9 == "A00"'	# all age groups (always true for 'rh' files)
+'$10 == "A0"'	# all races
+'$11 == "A0"'	# all ethnicities
+'$12 == "E0"'	# all education levels (always true for 'rh' files)
+'$13 == 0'	# all firm ages (always true for 'f' files)
+'$14 == 0'	# all firm sizes (always true for 'f' files)
+'$15 == 2016'	# year is 2016
+'$16 == 1'	# quarter 1
+
+EX. awk command which saves the header and rows where the above conditions are met in a new .csv file called qwi_de_rowsfiltered.csv is as follows:
+awk -F "," 'NR==1 || \
+	NR > 1 && $1 == "Q" && $8 == 0 && $9 =="A00" && \
+	$10 == "A0" && $11 == "A0" && $12 == "E0" && \
+	$13 == 0 && $14 == 0 && \
+	$15 == 2016 && $16 ==1' data/qwi_de_rh_f_gc_n4_op_u.csv > qwi_de_rowsfiltered.csv
+
+
+
+Within the .sh script loop, we can also select the desired columns using the column numbers (see column names in subsection below). For example to select columns 3 to 6, 15 to 19, 43 to 51, and 75 to 80 and save the resulting data as qwi_de.csv the following could be used.
+
+cat qwi_de_rowsfiltered.csv | cut -d, -f3-6,15-19,43-51,75-80 > qwi_de.csv
+
+
+------------- File Naming Structure --------------
+https://lehd.ces.census.gov/data/schema/latest/lehd_public_use_schema.html
+
+qwi_[state abbrev]_[emp agg type]_[firm agg type]_gc_[naisc level]_op_u.csv.gz
+
+state abbrev-- two letter state abbreviation (ex. de for Delaware, or pr for Puerto Rico)
+emp agg type-- 
+		rh: race by ethnicity *often the smallest file size of the three types.
+		sa: sex by age
+		se: sex by education
+firm agg type--
+		f: no firm size or age 
+		fa: tabulation by firm age 
+		fs: tabulation by firm size
+gc-- group by county (also includes state total) 
+		5 digits, first 2 indicate state, last 3 enumerate the county w/in the state 
+naisc level-- level at which the naisc industry codes are grouped
+		ns: sectors
+		n3: 3 digit naisc
+		n4: 4 digit nasic
+
+
+------ File Columns Names ------
+(1)periodicity		(28)HirAEndRepl		(55)sHirN
+(2)seasonadj		(29)HirAEndR		(56)sHirR
+(3)geo_level		(30)SepBegR		(57)sSep
+(4)geography		(31)HirAEndReplR	(58)sHirAEnd
+(5)ind_level		(32)HirAS		(59)sSepBeg
+(6)industry		(33)HirNS		(60)sHirAEndRepl
+(7)ownercode		(34)SepS		(61)sHirAEndR
+(8)sex			(35)SepSnx		(62)sSepBegR
+(9)agegrp		(36)TurnOvrS		(63)sHirAEndReplR
+(10)race		(37)FrmJbGn		(64)sHirAS
+(11)ethnicity		(38)FrmJbLs		(65)sHirNS
+(12)education		(39)FrmJbC		(66)sSepS
+(13)firmage		(40)FrmJbGnS		(67)sSepSnx
+(14)firmsize		(41)FrmJbLsS		(68)sTurnOvrS
+(15)year		(42)FrmJbCS		(69)sFrmJbGn
+(16)quarter		(43)EarnS		(70)sFrmJbLs
+(17)Emp			(44)EarnBeg		(71)sFrmJbC
+(18)EmpEnd		(45)EarnHirAS		(72)sFrmJbGnS
+(19)EmpS		(46)EarnHirNS		(73)sFrmJbLsS
+(20)EmpTotal		(47)EarnSepS		(74)sFrmJbCS
+(21)EmpSpv		(48)Payroll		(75)sEarnS
+(22)HirA		(49)sEmp		(76)sEarnBeg
+(23)HirN		(50)sEmpEnd		(77)sEarnHirAS
+(24)HirR		(51)sEmpS		(78)sEarnHirNS
+(25)Sep			(52)sEmpTotal		(79)sEarnSepS
+(26)HirAEnd		(53)sEmpSpv		(80)sPayroll
+(27)SepBeg		(54)sHirA
+		
+		
