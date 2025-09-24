@@ -7,7 +7,7 @@ accountant, postprocess, readers, reports, mechanisms: all contain python functi
 
 simulation_experiments: There are two sub-folders, synthetic_generation and run_experiments. In synthetic_generation is the python and R code with instructions on running the code to generate synthetic QCEW data from CBP and QWI sources. We summarize the process described in detail in generate_synthetic_instructions.txt below. In run_experiments there is python, R, and .sh files to sanitize the synthetic data and then analyze it across two main experiments. The first "equalwages" looks at replicates for when wages and employment have equal allocation within a query. The second "budgets" looks at replicates across several total privacy loss budgets. We summarize the process described in detail in run_experiments_instructions.txt below. 
 
-### In experiments directory:
+### In simultion_experiments directory:
 
 #### Summary of generation_synthetic/generate_synthetic_instructions.txt
 
