@@ -14,7 +14,7 @@ simulation_experiments: There are two sub-folders, synthetic_generation and run_
 First, retrieve the CBP, QWI, and imputed CBP datasets and place them in thier respective folders within generation_synthetic/DataIn. Then run preprocess_combine.py followed by getNAICS6data.R. Next use the Jupyter notebook microdataFromPython to create establishment level wage and employment data. Finally, run MicrodataPostprocessing.R to make the final datasets by state with additional variables.
 
 #### Summary run_experiments/run_experiments_instructions.txt
-First, copy main.py and the following folders accountant, comparisons, mechanisms, readers, and reports into run_experiments folder. Create the additional needed directories: measurements, compare_data, aggregated_data, and protected_data. To get the sanitized results run simulated_experiments.ipynb and follow the additional commented instructions about when to run the .sh files. Finally, the analysis of the experimental results is in main_tables.R, main_equalwages_plots.R, and main_budgets_plots.R in the experiments/run_experiments/R_code folder.
+First, copy main.py and the following folders into run_experiments folder: accountant, comparisons, mechanisms, readers, and reports. Create the additional needed directories: measurements, compare_data, aggregated_data, and protected_data. To get the sanitized results open simulated_experiments.ipynb. Run the cells and follow the additional commented instructions about when to run the .sh files in the order that they appear. Finally, the analysis of the experimental results is in main_tables.R, main_equalwages_plots.R, and main_budgets_plots.R in the experiments/run_experiments/R_code folder.
 
 
 
