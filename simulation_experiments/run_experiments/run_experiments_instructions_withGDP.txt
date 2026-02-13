@@ -1,0 +1,48 @@
+----------------------------------------
+----------------------------------------
+To run mechanisms on simulated data
+----------------------------------------
+For experiments where:
+- wages and employment have equal privacy budgets
+- GDP mechanism is included in experiment comparisons
+-------------------------------------- 
+
+Copy directories: postprocess, and reports into this folder.
+
+Create folders: measurements, compare_data, aggregated_data, protected_data, EstablishmentLevelData
+
+Create sub-directories: aggregated_data/baseline_standgaus_reps_ri, aggregated_data/baseline_standgaus_reps_nj, aggregated_data/equalwage_reps
+
+Copy nj34_qbp_2016_1.csv and ri44_qbp_2016_1.csv from results of synthetic_generation into EstablishmentLevelData/ 
+
+Run mainGDP.py
+
+--------------------------------
+To create plots and tables
+--------------------------------
+R packages needed: dplyr, tidyr, ggplot2, cowplot, colorBlindness, yaml, knitr, kableExtra
+
+R libraries that will be loaded: dplyr, tidyr, ggplot2, cowplot
+
+---- Option 1 in Rstudio -------
+Need package rprojroot
+
+Create directory: R_tables_plots/ 
+
+Open run_experiments.Rproj in Rstudio 
+
+Then run main_equalwages_plots.R in R_code folder.
+
+----- Option 2 in other R code platforms------
+
+Create directory: R_tables_plots/ 
+
+Replace instances of "rprojroot::find_rstudio_root_file()" to a string of the path of the run_experiments folder in the following locations:
+- Line 7 R_code/main_equalwages_plots.R
+- Lines 3 and 4 R_code/table_functions.R
+- Lines 1 and 2 in Rcode/table_figur_naming_functions.R
+- Line 7 in R_code/plotting_functions.R
+
+Then run main_equalwages_plots.R in R_code folder.
+
+

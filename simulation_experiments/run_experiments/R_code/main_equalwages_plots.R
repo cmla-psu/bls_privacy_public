@@ -4,15 +4,18 @@ library(tidyr)
 library(cowplot)
 
 #investigate why =W% doesn't mean = performance of wage and employment
-#r_basepath = rprojroot::find_rstudio_root_file()
-r_basepath = "C:/Users/Kaitlyn/Documents/GitHub/bls_privacy_public/simulation_experiments/run_experiments/R_code"
-basepath = "C:/Users/Kaitlyn/Documents/GitHub/bls_privacy_public/simulation_experiments/run_experiments"
+basepath = rprojroot::find_rstudio_root_file()
+r_basepath = paste0(proj_basepath,"/R_code")
 
 main.start=proc.time()
 
 basepath=gsub("/[^/]*$","",r_basepath) #run Mechanism folder
 folderin=paste0(basepath,"/compare_data") #folder of comparison outputs
 folderRtabs=paste0(basepath,"/R_tables_plots") #folder for tables and plots out
+
+colpalette=colorBlindness::Blue2DarkOrange12Steps[c(2,10)]
+fcolpalette=c("grey33",colorBlindness::Blue2DarkOrange12Steps[c(2,10)])
+
 
 source(paste0(r_basepath,"/comparison_config_functions.R"))
 source(paste0(r_basepath,"/table_functions.R"))
@@ -179,8 +182,6 @@ flongdf_avg=dplyr::summarise_at(
 
 #Plotting inputs
 basesize=10
-colpalette=colorBlindness::Blue2DarkOrange12Steps[c(2,10)]
-fcolpalette=c("grey33",colorBlindness::Blue2DarkOrange12Steps[c(2,10)])
 
 
 
