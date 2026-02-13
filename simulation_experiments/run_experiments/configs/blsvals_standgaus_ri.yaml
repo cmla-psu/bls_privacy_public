@@ -1,12 +1,12 @@
 # This is an example configuration for a privacy accountant
 
-seed: 2  # Seed for PRNG, either integer or null
+seed: 1  # Seed for PRNG, either integer or null
 
 clipping_prob: 0.01 # clipping probability for clipping accountant
 
 input_files: [  # input microdata files
-        EstablishmentLevelData/ri44_qbp_2016_1.csv,
-        EstablishmentLevelData/nj34_qbp_2016_1.csv
+        EstablishmentLevelData/ri44_qbp_2016_1.csv#,
+        #EstablishmentLevelData/nj34_qbp_2016_1.csv
 ] 
 
 output: {
@@ -23,15 +23,15 @@ output: {
     measure_folder: measurements
 }
 
-accountant: ClippingAccountant
+accountant: STANDGAUSAccountant
 
 reader: QCEWMicroDataReader
 
 privacy_distances: { # private fields and their privacy distance parameter
-        m1emp: 0.5,
-        m2emp: 0.5,
-        m3emp: 0.5,
-        wage: 50.0 
+        m1emp: 4050,
+        m2emp: 4002,
+        m3emp: 3954,
+        wage: 510039, 
     }
 
 

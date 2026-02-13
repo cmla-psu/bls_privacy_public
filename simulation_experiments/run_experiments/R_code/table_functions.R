@@ -1,7 +1,7 @@
 
 
-source(paste0(rprojroot::find_rstudio_root_file(),"/comparison_config_functions.R"))
-source(paste0(rprojroot::find_rstudio_root_file(),"/data_wrangling_functions.R"))
+source(paste0(rprojroot::find_rstudio_root_file(),"/R_code/comparison_config_functions.R"))
+source(paste0(rprojroot::find_rstudio_root_file(),"/R_code/data_wrangling_functions.R"))
 
 
 ## get the min, median, mean, std.dev, max of the number of establishments in a cell

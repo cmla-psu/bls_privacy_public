@@ -5,7 +5,7 @@ seed: 1  # Seed for PRNG, either integer or null
 clipping_prob: 0.01 # clipping probability for clipping accountant
 
 input_files: [  # input microdata files
-        EstablishmentLevelData/ri44_qbp_2016_1.csv,
+        #EstablishmentLevelData/ri44_qbp_2016_1.csv#,
         EstablishmentLevelData/nj34_qbp_2016_1.csv
 ] 
 
@@ -23,15 +23,15 @@ output: {
     measure_folder: measurements
 }
 
-accountant: SQRTAccountant
+accountant: STANDGAUSAccountant
 
 reader: QCEWMicroDataReader
 
 privacy_distances: { # private fields and their privacy distance parameter
-        m1emp: 0.5,
-        m2emp: 0.5,
-        m3emp: 0.5,
-        wage: 50.0 
+        m1emp: 7611,
+        m2emp: 7620,
+        m3emp: 7629,
+        wage: 3136080, 
     }
 
 

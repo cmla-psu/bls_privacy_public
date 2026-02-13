@@ -1,5 +1,5 @@
-source(paste0(rprojroot::find_rstudio_root_file(),"/comparison_config_functions.R"))
-source(paste0(rprojroot::find_rstudio_root_file(),"/table_functions.R"))
+source(paste0(rprojroot::find_rstudio_root_file(),"/R_code/comparison_config_functions.R"))
+source(paste0(rprojroot::find_rstudio_root_file(),"/R_code/table_functions.R"))
 
 #read config.yaml to get parameter values in a data.frame
 config_values=function(config.nm,

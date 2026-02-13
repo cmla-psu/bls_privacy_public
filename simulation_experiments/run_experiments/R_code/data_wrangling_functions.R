@@ -183,7 +183,7 @@ sum_not_max=function(data){
 }
 
 compare_reps_topk=function(sanagg,confdf,agglvl_code,ks.and.ppers=NULL,state.prefix=state.prefixes,
-                           estab_breaks=NULL,metric_keep=c("abs","rel"),add.conf.stats=NULL){
+                           estab_breaks=NULL,metric_keep=c("abs","rel"),add.conf.stats=NULL,conf.suffix="equalwage"){
   if(is.null(estab_breaks)==T){
     bynestabs=F
     bynestab=F
@@ -196,6 +196,7 @@ compare_reps_topk=function(sanagg,confdf,agglvl_code,ks.and.ppers=NULL,state.pre
   statecode=as.numeric(base::substr(state.prefix,3,4))
   statelvl=ifelse((as.numeric(agglvl_code)<69)&(as.numeric(agglvl_code)>49),T,F)
   lastdig=as.numeric(agglvl_code)%%10
+  #print(lastdig)
   indlvl_from_lastdig=c("total","domain","supersector","sector","naics3","naics4","naics5","naics")
   industrylvl=indlvl_from_lastdig[lastdig]
   if(industrylvl=="domain"){
@@ -205,7 +206,7 @@ compare_reps_topk=function(sanagg,confdf,agglvl_code,ks.and.ppers=NULL,state.pre
   if(sum(colnames(sanagg)=="own_code")>0){
     sanagg=sanagg[sanagg$own_code==5,]
   }
-  sanagg=sanagg[,grepl("agglvl|fips|industry|estabs",colnames(sanagg))|grepl("equalwage",colnames(sanagg))|colnames(sanagg)%in%c("total_qtrly_wages","month3_emplvl")]
+  sanagg=sanagg[,grepl("agglvl|fips|industry|estabs",colnames(sanagg))|grepl(conf.suffix,colnames(sanagg))|colnames(sanagg)%in%c("total_qtrly_wages","month3_emplvl")]
   #sanagg$wagediff=sanagg$total_qtrly_wages_equalwage_clip_rel-sanagg$total_qtrly_wages_equalwage_sqrt_rel
   #sanagg$empdiff=sanagg$month3_emplvl_equalwage_clip_rel-sanagg$month3_emplvl_equalwage_sqrt_rel
   #sanagg$wageratio=sanagg$total_qtrly_wages_equalwage_clip_rel/sanagg$total_qtrly_wages_equalwage_sqrt_rel
@@ -587,11 +588,12 @@ aggcode_relabel=function(aggcodes=NULL,
   return(new_aggcodes[,c("agglvl_code","agglvl")])
 }
 
-longdf_reps_topk=function(data){
-  basecols=c("agglvl_code","agggroup","state","cnty","industry_code","estab_bin","qtrly_estabs","ngroups")
+longdf_reps_topk=function(data,conf.suffix="equalwages"){
+  
+  basecols=c("agglvl_code","agggroup","state","cnty","industry_code","qtrly_estabs")
 
   #confdf
-  colnames(data)=gsub("equalwages","rep",colnames(data))
+  colnames(data)=gsub(conf.suffix,"rep",colnames(data))
   wagesdf=data[,c(basecols,colnames(data)[grepl("wage",colnames(data))])]
   wagesdf$variable="wages"
   colnames(wagesdf)=gsub("total_qtrly_wages","orig_val",colnames(wagesdf))
@@ -608,19 +610,21 @@ longdf_reps_topk=function(data){
   stackdf=dplyr::bind_rows(wagesdf,empdf)
   #print(colnames(stackdf))
   notmetric=!grepl("dif|abs|rel", colnames(stackdf))
-  colnames(stackdf)[grepl("_sqrt|_clip", colnames(stackdf))&notmetric]=paste0(colnames(stackdf)[grepl("_sqrt|_clip", colnames(stackdf))&notmetric],"_sanvalue")
+  colnames(stackdf)[grepl("_sqrt|_clip|_GDPmech", colnames(stackdf))&notmetric]=paste0(colnames(stackdf)[grepl("_sqrt|_clip|_GDPmech", colnames(stackdf))&notmetric],"_sanvalue")
   #colnames(stackdf)[grepl("rep[0-9]*_clip", colnames(stackdf))]=paste0(colnames(stackdf)[grepl("rep[0-9]*_clip", colnames(stackdf))],"_sanvalue")
 
   #print(colnames(stackdf))
 
   longdf=tidyr::pivot_longer(stackdf,cols=colnames(stackdf)[grepl("rep",colnames(stackdf))],names_to=c("repetition","mechanism","metric_measure"),
                              names_prefix="rep",names_sep="_",values_to = "metric_value")
+  
   longdf=tidyr::pivot_wider(longdf,names_from=metric_measure,values_from=metric_value)
-  #colnames(longdf)
-  longdf$mechanism=ifelse(longdf$mechanism=="sqrt","sqrt","pnc")
+  
+  longdf$mechanism=ifelse(longdf$mechanism=="sqrt","sqrt",ifelse(longdf$mechanism=="GDPmech","GDPmech","pnc"))
   return(longdf)
 
 }
+
 
 
 ## create cell identifier with area_fips X industry_code,
